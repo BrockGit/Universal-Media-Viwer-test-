@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reprodutor de Mídia Universal</title>
+    <title>Reprodutor de Mídia Universal com AirPlay</title>
     <!-- Incluindo Tailwind CSS para estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
@@ -39,11 +39,20 @@
         <h1 class="text-4xl sm:text-5xl font-bold text-white mb-2">Reprodutor de Mídia Universal</h1>
         <p class="text-lg text-gray-400 mb-8">Selecione um arquivo de áudio ou vídeo do seu computador para reproduzir.</p>
 
-        <!-- Botão customizado para upload de arquivo -->
-        <label for="file-upload" class="cursor-pointer inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-            Selecionar Arquivo
-        </label>
-        <input id="file-upload" type="file" accept="audio/*,video/*">
+        <!-- Container para os botões -->
+        <div class="flex flex-wrap justify-center items-center gap-4">
+            <!-- Botão customizado para upload de arquivo -->
+            <label for="file-upload" class="cursor-pointer inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                Selecionar Arquivo
+            </label>
+            <input id="file-upload" type="file" accept="audio/*,video/*">
+
+            <!-- Botão do AirPlay (inicialmente oculto) -->
+            <button id="airplay-button" class="hidden cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                AirPlay
+            </button>
+        </div>
 
         <!-- Container onde o player de vídeo ou áudio será exibido -->
         <div id="media-container" class="mt-8 w-full bg-black rounded-lg shadow-2xl overflow-hidden min-h-[200px] flex items-center justify-center">
@@ -62,6 +71,7 @@
         const fileUpload = document.getElementById('file-upload');
         const mediaContainer = document.getElementById('media-container');
         const placeholder = document.getElementById('placeholder');
+        const airplayButton = document.getElementById('airplay-button');
         
         // Armazena a URL do objeto de mídia atual para limpeza posterior
         let currentObjectUrl = null;
@@ -70,6 +80,9 @@
         fileUpload.addEventListener('change', (event) => {
             // Pega o primeiro arquivo selecionado pelo usuário
             const file = event.target.files[0];
+
+            // Oculta o botão AirPlay ao carregar um novo arquivo
+            airplayButton.classList.add('hidden');
 
             if (file) {
                 // Limpa o container de mídia e revoga a URL do objeto anterior para liberar memória
@@ -86,6 +99,22 @@
                 // Verifica o tipo de arquivo para decidir se cria um elemento <video> ou <audio>
                 if (file.type.startsWith('video/')) {
                     mediaPlayer = document.createElement('video');
+                    // Habilita AirPlay. 'allow' permite que o botão apareça nos controles do player.
+                    // 'playsinline' é importante para uma boa experiência no iOS.
+                    mediaPlayer.setAttribute('x-webkit-airplay', 'allow');
+                    mediaPlayer.setAttribute('playsinline', '');
+
+                    // Verifica a disponibilidade do AirPlay e mostra/oculta o botão
+                    if (window.WebKitPlaybackTargetAvailabilityEvent) {
+                        mediaPlayer.addEventListener('webkitplaybacktargetavailabilitychanged', function(event) {
+                            if (event.availability === 'available') {
+                                airplayButton.classList.remove('hidden');
+                            } else {
+                                airplayButton.classList.add('hidden');
+                            }
+                        });
+                    }
+
                 } else if (file.type.startsWith('audio/')) {
                     mediaPlayer = document.createElement('audio');
                 } else {
@@ -96,8 +125,9 @@
                     return;
                 }
                 
-                // Oculta o placeholder
-                if(placeholder) placeholder.style.display = 'none';
+                // Oculta o placeholder se existir
+                const placeholderDiv = document.getElementById('placeholder');
+                if(placeholderDiv) placeholderDiv.style.display = 'none';
 
                 // Configura os atributos do player de mídia
                 mediaPlayer.src = currentObjectUrl;
@@ -110,6 +140,16 @@
 
             }
         });
+
+        // Adiciona um ouvinte de evento para o botão do AirPlay
+        airplayButton.addEventListener('click', () => {
+            const videoElement = mediaContainer.querySelector('video');
+            // Abre o seletor de dispositivos AirPlay
+            if (videoElement && typeof videoElement.webkitShowPlaybackTargetPicker === 'function') {
+                videoElement.webkitShowPlaybackTargetPicker();
+            }
+        });
+
     </script>
 </body>
 </html>
