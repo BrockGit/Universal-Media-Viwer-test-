@@ -34,7 +34,7 @@
 </head>
 <body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
 
-    <div class="w-full max-w-4xl text-center">
+    <div id="main-content" class="w-full max-w-4xl text-center">
         <!-- Título e Subtítulo -->
         <h1 class="text-4xl sm:text-5xl font-bold text-white mb-2">Reprodutor de Mídia Universal</h1>
         <p class="text-lg text-gray-400 mb-8">Selecione um arquivo de áudio ou vídeo do seu computador para reproduzir.</p>
@@ -52,6 +52,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 AirPlay
             </button>
+             <!-- Botão para fechar -->
+            <button id="close-button" class="cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                Fechar
+            </button>
         </div>
 
         <!-- Container onde o player de vídeo ou áudio será exibido -->
@@ -65,6 +69,19 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal de Confirmação (inicialmente oculto) -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-sm w-full mx-4">
+            <h3 class="text-2xl font-bold text-white mb-4">Confirmar Fechamento</h3>
+            <p class="text-gray-300 mb-6">Você tem certeza de que deseja fechar o aplicativo?</p>
+            <div class="flex justify-end gap-4">
+                <button id="cancel-close-button" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-close-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Sim, Fechar</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         // Obtém referências para os elementos do DOM
@@ -72,6 +89,11 @@
         const mediaContainer = document.getElementById('media-container');
         const placeholder = document.getElementById('placeholder');
         const airplayButton = document.getElementById('airplay-button');
+        const closeButton = document.getElementById('close-button');
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const cancelCloseButton = document.getElementById('cancel-close-button');
+        const confirmCloseButton = document.getElementById('confirm-close-button');
+        const mainContent = document.getElementById('main-content');
         
         // Armazena a URL do objeto de mídia atual para limpeza posterior
         let currentObjectUrl = null;
@@ -150,6 +172,30 @@
             }
         });
 
+        // --- Lógica para o Modal de Fechamento ---
+
+        // Mostra o modal quando o botão fechar é clicado
+        closeButton.addEventListener('click', () => {
+            confirmationModal.classList.remove('hidden');
+        });
+
+        // Esconde o modal quando o botão cancelar é clicado
+        cancelCloseButton.addEventListener('click', () => {
+            confirmationModal.classList.add('hidden');
+        });
+
+        // Lida com a confirmação de fechamento
+        confirmCloseButton.addEventListener('click', () => {
+            // Esconde o modal
+            confirmationModal.classList.add('hidden');
+            // Substitui o conteúdo da página por uma mensagem de fechamento
+            document.body.innerHTML = `
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-white mb-4">Aplicativo Fechado</h1>
+                    <p class="text-gray-300">Você pode fechar esta aba do navegador agora.</p>
+                </div>
+            `;
+        });
     </script>
 </body>
 </html>
