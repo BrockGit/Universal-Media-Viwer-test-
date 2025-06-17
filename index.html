@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprodutor de Mídia Universal</title>
+    <!-- Incluindo Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        /* Estilização para o corpo e fonte */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilização para a aparência da barra de rolagem */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        /* Oculta o input de arquivo padrão */
+        #file-upload {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+
+    <div class="w-full max-w-4xl text-center">
+        <!-- Título e Subtítulo -->
+        <h1 class="text-4xl sm:text-5xl font-bold text-white mb-2">Reprodutor de Mídia Universal</h1>
+        <p class="text-lg text-gray-400 mb-8">Selecione um arquivo de áudio ou vídeo do seu computador para reproduzir.</p>
+
+        <!-- Botão customizado para upload de arquivo -->
+        <label for="file-upload" class="cursor-pointer inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+            Selecionar Arquivo
+        </label>
+        <input id="file-upload" type="file" accept="audio/*,video/*">
+
+        <!-- Container onde o player de vídeo ou áudio será exibido -->
+        <div id="media-container" class="mt-8 w-full bg-black rounded-lg shadow-2xl overflow-hidden min-h-[200px] flex items-center justify-center">
+             <div id="placeholder" class="text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55a2 2 0 01.45 2.42l-2.42 4.55a2 2 0 01-2.42.45l-4.55-2.42a2 2 0 01-.45-2.42l2.42-4.55a2 2 0 012.42-.45z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a3 3 0 100-6 3 3 0 000 6z" />
+                </svg>
+                <p>Nenhuma mídia selecionada</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Obtém referências para os elementos do DOM
+        const fileUpload = document.getElementById('file-upload');
+        const mediaContainer = document.getElementById('media-container');
+        const placeholder = document.getElementById('placeholder');
+        
+        // Armazena a URL do objeto de mídia atual para limpeza posterior
+        let currentObjectUrl = null;
+
+        // Adiciona um ouvinte de evento para o input de arquivo
+        fileUpload.addEventListener('change', (event) => {
+            // Pega o primeiro arquivo selecionado pelo usuário
+            const file = event.target.files[0];
+
+            if (file) {
+                // Limpa o container de mídia e revoga a URL do objeto anterior para liberar memória
+                mediaContainer.innerHTML = '';
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl);
+                }
+
+                // Cria uma URL local para o arquivo selecionado
+                currentObjectUrl = URL.createObjectURL(file);
+
+                let mediaPlayer;
+                
+                // Verifica o tipo de arquivo para decidir se cria um elemento <video> ou <audio>
+                if (file.type.startsWith('video/')) {
+                    mediaPlayer = document.createElement('video');
+                } else if (file.type.startsWith('audio/')) {
+                    mediaPlayer = document.createElement('audio');
+                } else {
+                    // Se o tipo de arquivo não for suportado, exibe uma mensagem de erro
+                    mediaContainer.innerHTML = '<p class="text-red-500 p-8">Tipo de arquivo não suportado. Por favor, selecione um arquivo de áudio ou vídeo.</p>';
+                    // Mostra o placeholder novamente se o arquivo for inválido
+                    if(placeholder) placeholder.style.display = 'block'; 
+                    return;
+                }
+                
+                // Oculta o placeholder
+                if(placeholder) placeholder.style.display = 'none';
+
+                // Configura os atributos do player de mídia
+                mediaPlayer.src = currentObjectUrl;
+                mediaPlayer.controls = true; // Mostra os controles de reprodução
+                mediaPlayer.autoplay = true; // Inicia a reprodução automaticamente
+                mediaPlayer.className = 'w-full h-full max-h-[70vh] rounded-lg'; // Estilização com Tailwind CSS
+                
+                // Adiciona o player de mídia ao container
+                mediaContainer.appendChild(mediaPlayer);
+
+            }
+        });
+    </script>
+</body>
+</html>
